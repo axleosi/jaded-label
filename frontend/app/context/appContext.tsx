@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import axios from 'axios';
   import {jwtDecode} from 'jwt-decode';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 type Product = {
   _id: string;
