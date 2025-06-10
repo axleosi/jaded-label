@@ -27,7 +27,7 @@ const ItGirl = () => {
 
         {/* Image Section */}
         <div className='w-full sm:w-1/2 h-[20rem] sm:h-[30rem] relative'>
-          <img src="femalecollection.jpg" alt="" className="w-full h-full object-cover z-10" />
+          <img src="hero1.jpg" alt="" className="w-full h-full object-cover z-10" />
           <img src="vector6.svg" className='absolute -top-4 -right-4 h-96 [@media(max-width:1100px)]:hidden' />
           <img src="vector7.svg" className='absolute -bottom-4 -left-4 h-96 [@media(max-width:1100px)]:hidden' />
         </div>
