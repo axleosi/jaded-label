@@ -55,7 +55,7 @@ const ProductPage = () => {
                 const res = await axios.get('http://localhost:3000/api/product');
                 console.log('API response:', res.data);
                 setProducts(res.data.products);
-            } catch (err) {
+            } catch {
                 setError('Failed to fetch products');
             } finally {
                 setLoading(false);
@@ -102,9 +102,15 @@ const ProductPage = () => {
                 setCartSuccess('Product added to cart');
                 setCartError(null)
             }
-        } catch (err: any) {
-            setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
-            setCartSuccess(null)
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
+            } else if (err instanceof Error) {
+                setCartError('Failed to add to cart:' + err.message);
+            } else {
+                setCartError('Failed to add to cart: unknown error');
+            }
+            setCartSuccess(null);
         }
     }
 
@@ -142,20 +148,26 @@ const ProductPage = () => {
                 setCartSuccess('Product added to cart!');
                 setCartError(null);
                 router.push('/cart');
-            } catch (err: any) {
-                setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
+            } catch (err: unknown) {
+                if (axios.isAxiosError(err)) {
+                    setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
+                } else if (err instanceof Error) {
+                    setCartError('Failed to add to cart:' + err.message);
+                } else {
+                    setCartError('Failed to add to cart: unknown error');
+                }
                 setCartSuccess(null);
             }
         }
     };
 
     useEffect(() => {
-    if (isLoggedIn && loginTriggeredByCheckout) {
-        router.push('/cart');
-        setLoginTriggeredByCheckout(false);
-        setShowLogin(false);
-    }
-}, [isLoggedIn, loginTriggeredByCheckout, router, setShowLogin]);
+        if (isLoggedIn && loginTriggeredByCheckout) {
+            router.push('/cart');
+            setLoginTriggeredByCheckout(false);
+            setShowLogin(false);
+        }
+    }, [isLoggedIn, loginTriggeredByCheckout, router, setShowLogin]);
 
     if (loading) return <p>Loading...</p>
     if (error) return <p>{error}</p>

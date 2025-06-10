@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaInstagram, FaLinkedin, FaTwitter, FaWhatsapp,} from "react-icons/fa"; 
+
 
 
 const About = () => {

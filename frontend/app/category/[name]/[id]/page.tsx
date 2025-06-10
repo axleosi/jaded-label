@@ -56,7 +56,7 @@ const ProductPage = () => {
                 const res = await axios.get('http://localhost:3000/api/product');
                 console.log('API response:', res.data);
                 setProducts(res.data.products);
-            } catch (err) {
+            } catch {
                 setError('Failed to fetch products');
             } finally {
                 setLoading(false);
@@ -103,19 +103,25 @@ const ProductPage = () => {
                 setCartSuccess('Product added to cart');
                 setCartError(null)
             }
-        } catch (err: any) {
-            setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
-            setCartSuccess(null)
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
+            } else if (err instanceof Error) {
+                setCartError('Failed to add to cart:' + err.message);
+            } else {
+                setCartError('Failed to add to cart: unknown error');
+            }
+            setCartSuccess(null);
         }
     }
 
     const checkOut = async () => {
-        if(!isLoggedIn){
+        if (!isLoggedIn) {
             setShowLogin(true)
             setLoginTriggeredByCheckout(true);
             return;
         }
-        
+
         const token = localStorage.getItem('authToken');
 
         if (!token) {
@@ -143,8 +149,14 @@ const ProductPage = () => {
                 setCartSuccess('Product added to cart!');
                 setCartError(null);
                 router.push('/cart');
-            } catch (err: any) {
-                setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
+            } catch (err: unknown) {
+                if (axios.isAxiosError(err)) {
+                    setCartError('Failed to add to cart:' + (err.response?.data?.message || err.message));
+                } else if (err instanceof Error) {
+                    setCartError('Failed to add to cart:' + err.message);
+                } else {
+                    setCartError('Failed to add to cart: unknown error');
+                }
                 setCartSuccess(null);
             }
         }
@@ -208,9 +220,9 @@ const ProductPage = () => {
                                 <path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z" />
                             </svg>
                         </button>
-                        
+
                     </div>
-                    
+
                     {cartSuccess && <p className='text-green-600 mt-2'>{cartSuccess}</p>}
                     {cartError && <p className='text-red-600 mt-2'>{cartError}</p>}
 

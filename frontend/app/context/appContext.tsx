@@ -1,15 +1,38 @@
 'use client'
-import React from 'react'
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios'
-import { jwtDecode } from 'jwt-decode';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import axios from 'axios';
+  import {jwtDecode} from 'jwt-decode';
+import { useRouter } from 'next/router';
+
+type Product = {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  stock: number;
+};
 
 type CartItem = {
   _id: string;
   productId: Product;
   quantity: number;
   imageUrl: string;
+};
+
+type GuestCartItem = {
+  productId: string;
+  name: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
 };
 
 interface AppContextType {
@@ -23,8 +46,8 @@ interface AppContextType {
   quantity: number;
   setQuantity: React.Dispatch<React.SetStateAction<number>>;
   isLoggedIn: boolean;
-  login: (token: string) => void;
-  logout: () => void;
+  login: (token: string) => Promise<void>;
+  logout: () => Promise<void>;
   cartCount: number;
   setCartCount: (count: number) => void;
   fetchCartCount: () => Promise<void>;
@@ -35,27 +58,16 @@ interface AppContextType {
   setShowSignUp: (value: boolean) => void;
   cartItems: CartItem[];
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
-
 }
 
 interface JwtPayload {
   exp: number;
 }
 
-type Product = {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  imageUrl: string;
-  stock: number;
-};
-
-
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const router = useRouter()
+  const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,11 +115,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setIsLoggedIn(true);
 
     // Sync guest cart to server
-    const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+    const guestCart: GuestCartItem[] = JSON.parse(localStorage.getItem('guestCart') || '[]');
     if (guestCart.length > 0) {
       try {
         await Promise.all(
-          guestCart.map((item: any) =>
+          guestCart.map((item: GuestCartItem) =>
             axios.post(
               'http://localhost:3000/api/cart',
               {
@@ -123,8 +135,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         );
 
         localStorage.removeItem('guestCart');
-      } catch (err) {
-        console.error('Failed to sync guest cart:', err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error('Failed to sync guest cart:', err.message);
+        } else {
+          console.error('Failed to sync guest cart:', err);
+        }
       }
     }
 
@@ -140,8 +156,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         await axios.delete('http://localhost:3000/api/cart', {
           headers: { Authorization: `Bearer ${token}` },
         });
-      } catch (err) {
-        console.error('Failed to clear backend cart:', err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error('Failed to clear backend cart:', err.message);
+        } else {
+          console.error('Failed to clear backend cart:', err);
+        }
       }
     }
 
@@ -156,27 +176,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     router.push('/');
   };
 
-
-
-
-  const fetchProduct = async (productId: string) => {
-    try {
-      const res = await axios.get(`http://localhost:3000/api/product/${productId}`);
-      setProduct(res.data.product);
-    } catch (err) {
-      setError('Failed to load product');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchProduct = useCallback(
+    async (productId: string) => {
+      try {
+        const res = await axios.get(`http://localhost:3000/api/product/${productId}`);
+        setProduct(res.data.product);
+      } catch {
+        setError('Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setProduct, setError, setLoading]
+  );
 
   const fetchCartCount = async () => {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
       // Only read guestCart if not logged in
-      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
-      const count = localCart.reduce((acc: number, item: any) => acc + item.quantity, 0);
+      const localCart: GuestCartItem[] = JSON.parse(localStorage.getItem('guestCart') || '[]');
+      const count = localCart.reduce((acc: number, item: GuestCartItem) => acc + item.quantity, 0);
       setCartCount(count);
       return;
     }
@@ -191,7 +211,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         0
       );
       setCartCount(totalItems);
-    } catch (err) {
+    } catch {
       console.error('Failed to fetch cart count');
     }
   };
@@ -201,9 +221,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     if (!token) {
       // Guest user — use localStorage
-      const existing = JSON.parse(localStorage.getItem('guestCart') || '[]');
+      const existing: GuestCartItem[] = JSON.parse(localStorage.getItem('guestCart') || '[]');
 
-      const index = existing.findIndex((item: any) => item.productId === product._id);
+      const index = existing.findIndex((item: GuestCartItem) => item.productId === product._id);
       if (index > -1) {
         existing[index].quantity = quantity;
       } else {
@@ -212,12 +232,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           name: product.name,
           price: product.price,
           imageUrl,
-          quantity
+          quantity,
         });
       }
 
       localStorage.setItem('guestCart', JSON.stringify(existing));
-      setCartCount(existing.reduce((acc: number, item: any) => acc + item.quantity, 0));
+      setCartCount(existing.reduce((acc: number, item: GuestCartItem) => acc + item.quantity, 0));
       return;
     }
 
@@ -229,7 +249,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     await fetchCartCount();
   };
-
 
   const value: AppContextType = {
     product,

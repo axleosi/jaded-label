@@ -6,7 +6,27 @@ import toast from 'react-hot-toast';
 import { useAppContext } from '../context/appContext';
 
 
-
+type GuestCartItem = {
+  productId: string;
+  name: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
+};
+type CartItem = {
+  _id: string;
+  productId: Product;
+  quantity: number;
+  imageUrl: string;
+};
+type Product = {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  stock: number;
+};
 
 const Checkout = () => {
   const router = useRouter();
@@ -17,37 +37,40 @@ const Checkout = () => {
   const { fetchCartCount, isLoggedIn, setShowLogin, cartItems, setCartItems } = useAppContext();
 
   useEffect(() => {
-  const fetchCart = async () => {
-    if (!token) {
-      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+    const fetchCart = async () => {
+      if (!token) {
+        const localCart: GuestCartItem[] = JSON.parse(localStorage.getItem('guestCart') || '[]');
 
-      const guestItems = localCart.map((item: any, index: number) => ({
-        _id: String(index),
-        productId: {
-          name: item.name,
-          description: '',
-          price: item.price,
-        },
-        quantity: item.quantity,
-        imageUrl: item.imageUrl,
-      }));
+        const guestItems: CartItem[] = localCart.map((item, index) => ({
+          _id: String(index),
+          productId: {
+            _id: item.productId,
+            name: item.name,
+            description: '',         // Placeholder or get from storage if available
+            price: item.price,
+            imageUrl: item.imageUrl,
+            stock: 1,                // Default guest cart stock (if unknown)
+          },
+          quantity: item.quantity,
+          imageUrl: item.imageUrl,
+        }));
 
-      setCartItems(guestItems);
-      return;
-    }
+        setCartItems(guestItems);
+        return;
+      }
 
-    try {
-      const res = await axios.get('http://localhost:3000/api/cart', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCartItems(res.data.cart);
-    } catch (err) {
-      toast.error('Failed to load cart items.');
-    }
-  };
+      try {
+        const res = await axios.get('http://localhost:3000/api/cart', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCartItems(res.data.cart);
+      } catch {
+        toast.error('Failed to load cart items.');
+      }
+    };
 
-  fetchCart();
-}, [token]);
+    fetchCart();
+  }, [token]);
 
 
 
@@ -63,63 +86,65 @@ const Checkout = () => {
   const finalTotal = totalPrice
 
   const handleOrderSubmit = async () => {
-  if (!isLoggedIn) {
-    setShowLogin(true);
-    return; // ✅ Prevent further execution
-  }
+    if (!isLoggedIn) {
+      setShowLogin(true);
+      return; // ✅ Prevent further execution
+    }
 
-  const { state, lga, street } = address;
+    const { state, lga, street } = address;
 
-  if (!state || !lga || !street.trim()) {
-    toast.error('Please complete all address fields.');
-    return;
-  }
+    if (!state || !lga || !street.trim()) {
+      toast.error('Please complete all address fields.');
+      return;
+    }
 
-  if (!phoneNumber.trim() || !/^[0-9]{10,14}$/.test(phoneNumber)) {
-    toast.error('Enter a valid phone number.');
-    return;
-  }
+    if (!phoneNumber.trim() || !/^[0-9]{10,14}$/.test(phoneNumber)) {
+      toast.error('Enter a valid phone number.');
+      return;
+    }
 
-  if (cartItems.length === 0) {
-    toast.error('Your cart is empty.');
-    return;
-  }
+    if (cartItems.length === 0) {
+      toast.error('Your cart is empty.');
+      return;
+    }
 
-  setLoading(true);
-  try {
-    const items = cartItems
-      .filter((item) => item.productId)
-      .map((item) => ({
-        product: item.productId,
-        quantity: item.quantity,
-        priceAtOrderTime: item.productId.price,
-        nameAtOrderTime: item.productId.name,
-      }));
+    setLoading(true);
+    try {
+      const items = cartItems
+        .filter((item) => item.productId)
+        .map((item) => ({
+          product: item.productId,
+          quantity: item.quantity,
+          priceAtOrderTime: item.productId.price,
+          nameAtOrderTime: item.productId.name,
+        }));
 
-    await axios.post(
-      'http://localhost:3000/api/orders',
-      {
-        items,
-        address: `${street}, ${lga}, ${state}`,
-        totalAmount: totalPrice,
-        phoneNumber,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.post(
+        'http://localhost:3000/api/orders',
+        {
+          items,
+          address: `${street}, ${lga}, ${state}`,
+          totalAmount: totalPrice,
+          phoneNumber,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success('Order placed successfully!');
+      setCartItems([]);
+      setAddress({ state: '', lga: '', street: '' });
+      await fetchCartCount();
+      setTimeout(() => router.push('/'), 1500);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.error || 'Failed to place order.');
+      } else {
+        toast.error('An unexpected error occurred.');
       }
-    );
-
-    toast.success('Order placed successfully!');
-    setCartItems([]);
-    setAddress({ state: '', lga: '', street: '' });
-    await fetchCartCount();
-    setTimeout(() => router.push('/'), 1500);
-  } catch (err: any) {
-    toast.error(err.response?.data?.error || 'Failed to place order.');
-  } finally {
-    setLoading(false);
-  }
-};
+    }
+  };
 
 
   return (

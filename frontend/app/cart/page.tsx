@@ -1,7 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import Checkout from '../components/Checkout';
 import { useAppContext } from '../context/appContext';
 
@@ -19,56 +18,63 @@ type Product = {
   imageUrl: string;
   stock: number;
 };
-
+type GuestCartItem = {
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+};
 const Cart = () => {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { fetchCartCount, setShowLogin, isLoggedIn, cartItems, setCartItems } = useAppContext();
+  const { fetchCartCount, isLoggedIn, cartItems, setCartItems } = useAppContext();
 
   const token = localStorage.getItem('authToken');
 
-  const fetchCart = async () => {
-  const token = localStorage.getItem('authToken');
-  console.log("Auth token in fetchCart:", token); // ✅ Add this to debug
+  const fetchCart = useCallback(async () => {
+    const token = localStorage.getItem('authToken');
 
-  if (!token) {
-    // Guest user
-    const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+    if (!token) {
+      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]') as GuestCartItem[];
 
-    const cartItems: CartItem[] = localCart.map((item: any, index: number) => ({
-      _id: String(index),
-      productId: {
-        name: item.name,
-        description: '', 
-        price: item.price,
-      },
-      quantity: item.quantity,
-      imageUrl: item.imageUrl,
-    }));
+      const cartItems: CartItem[] = localCart.map((item, index) => ({
+        _id: String(index),
+        productId: {
+          _id: '',
+          name: item.name,
+          description: '',
+          price: item.price,
+          imageUrl: item.imageUrl,
+          stock: 0,
+        },
+        quantity: item.quantity,
+        imageUrl: item.imageUrl,
+      }));
 
-    setError(null); // ✅ Clear error for guest user
-    setCartItems(cartItems);
-    setLoading(false);
-    return;
-  }
+      setError(null);
+      setCartItems(cartItems);
+      setLoading(false);
+      return;
+    }
 
-  try {
-    const res = await axios.get('http://localhost:3000/api/cart', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const res = await axios.get('http://localhost:3000/api/cart', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const filteredCartItems = res.data.cart.filter((item: CartItem) => item.productId !== null);
-    setCartItems(filteredCartItems);
-    setError(null); // ✅ Clear any old error
-  } catch (err) {
-    console.error('Failed to fetch cart from API:', err);
-    setCartItems([]);
-    setError('Failed to load cart items');
-  } finally {
-    setLoading(false);
-  }
-};
+      const filteredCartItems = res.data.cart.filter((item: CartItem) => item.productId !== null);
+      setCartItems(filteredCartItems);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch cart from API:', err);
+      setCartItems([]);
+      setError('Failed to load cart items');
+    } finally {
+      setLoading(false);
+    }
+  }, [setCartItems, setError, setLoading]);
+
+
 
 
 
@@ -76,9 +82,8 @@ const Cart = () => {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-      // Guest: Update localStorage
-      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
-      const updatedCart = guestCart.map((item: any, index: number) => {
+      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]') as GuestCartItem[];
+      const updatedCart = guestCart.map((item, index) => {
         if (String(index) === itemId) {
           return { ...item, quantity: newQuantity };
         }
@@ -87,36 +92,34 @@ const Cart = () => {
 
       localStorage.setItem('guestCart', JSON.stringify(updatedCart));
 
-      const updatedCartItems: CartItem[] = updatedCart.map((item: any, index: number) => ({
+      const updatedCartItems: CartItem[] = updatedCart.map((item, index) => ({
         _id: String(index),
         productId: {
+          _id: '',
           name: item.name,
           description: '',
           price: item.price,
+          imageUrl: item.imageUrl,
+          stock: 0,
         },
         quantity: item.quantity,
         imageUrl: item.imageUrl,
       }));
 
       setCartItems(updatedCartItems);
-      fetchCartCount(); // to update cart count in Navbar
+      fetchCartCount();
       return;
     }
 
-    // Logged-in user
     try {
       await axios.patch(
         `http://localhost:3000/api/cart/${itemId}`,
         { quantity: newQuantity },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setCartItems((prev) =>
-        prev.map((item) =>
+      setCartItems(prev =>
+        prev.map(item =>
           item._id === itemId ? { ...item, quantity: newQuantity } : item
         )
       );
@@ -127,33 +130,35 @@ const Cart = () => {
   };
 
 
+
   const deleteCartItem = async (itemId: string) => {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-      // Guest: Update localStorage
-      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
-      const updatedCart = guestCart.filter((_: any, index: number) => String(index) !== itemId);
+      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]') as GuestCartItem[];
+      const updatedCart = guestCart.filter((_, index) => String(index) !== itemId);
 
       localStorage.setItem('guestCart', JSON.stringify(updatedCart));
 
-      const updatedCartItems: CartItem[] = updatedCart.map((item: any, index: number) => ({
+      const updatedCartItems: CartItem[] = updatedCart.map((item, index) => ({
         _id: String(index),
         productId: {
+          _id: '',
           name: item.name,
           description: '',
           price: item.price,
+          imageUrl: item.imageUrl,
+          stock: 0,
         },
         quantity: item.quantity,
         imageUrl: item.imageUrl,
       }));
 
       setCartItems(updatedCartItems);
-      fetchCartCount(); // to update cart count in Navbar
+      fetchCartCount();
       return;
     }
 
-    // Logged-in user
     try {
       await axios.delete(`http://localhost:3000/api/cart/${itemId}`, {
         headers: {
@@ -168,6 +173,7 @@ const Cart = () => {
   };
 
 
+
   useEffect(() => {
     const loadCart = async () => {
       setLoading(true);
@@ -176,13 +182,6 @@ const Cart = () => {
 
     loadCart();
   }, [isLoggedIn]);
-
-
-  // Calculate total price safely
-  const total = cartItems.reduce((acc, item) => {
-    if (!item.productId) return acc;
-    return acc + item.productId.price * item.quantity;
-  }, 0);
 
   if (loading) return <p>Loading cart...</p>;
   if (error && token) return <p style={{ color: 'red' }}>{error}</p>;

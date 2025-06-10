@@ -39,7 +39,7 @@ const Categories = () => {
                 const res = await axios.get('http://localhost:3000/api/product');
                 console.log('API response:', res.data);
                 setProducts(res.data.products);
-            } catch (err) {
+            } catch {
                 setError('Failed to fetch products');
             } finally {
                 setLoading(false);
@@ -72,7 +72,7 @@ const Categories = () => {
                         <h1 className='text-3xl lg:text-5xl text-center font-bold'>Elevate Your Style With Our Exquisite Jewelry</h1>
                         <p className='text-center text-sm mx-auto mt-[0.625rem] w-[80%]'>
                             Every jewelry piece provided by jadellabel is tarnish free and guaranteed to last forever.
-                            We promise that our customer's satisfaction is our utmost priority and we always ensure to supply
+                            We promise that our customer&apos;s satisfaction is our utmost priority and we always ensure to supply
                             the best jewelry piece for you.
                         </p>
                     </div>

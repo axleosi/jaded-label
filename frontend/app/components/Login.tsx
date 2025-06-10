@@ -115,7 +115,7 @@ const Login: React.FC<LoginProps> = ({ closeForm, switchToSignUp }) => {
 
           {/* Switch to Signup */}
           <p className="text-sm text-center mt-2">
-            Don't have an account?
+            Don&apos;t have an account?{' '}
             <button onClick={switchToSignUp} className="text-pink-300 hover:underline">
               Sign up here
             </button>

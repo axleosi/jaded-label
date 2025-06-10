@@ -79,7 +79,7 @@ const CollectionName = () => {
             <h1 className='text-3xl lg:text-5xl text-center font-bold'>Enjoy Our Collection Curated For You</h1>
             <p className='text-center text-sm mx-auto mt-[0.625rem] w-[80%]'>
               Every jewelry piece provided by jadellabel is tarnish free and guaranteed to last forever.
-              We promise that our customer's satisfaction is our utmost priority and we always ensure to supply
+              We promise that our customer&apos;s satisfaction is our utmost priority and we always ensure to supply
               the best jewelry piece for you.
             </p>
           </div>

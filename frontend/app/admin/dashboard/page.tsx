@@ -57,7 +57,7 @@ export default function AdminDashboard() {
     const [form, setForm] = useState<ProductInput>(emptyProductInput);
     const [error, setError] = useState<string>('');
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const token = localStorage.getItem('authToken')
 
     const fetchData = async () => {
         try {
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
             setCategories(catRes.data);
             setCollections(colRes.data);
             setError('');
-        } catch (err) {
+        } catch {
             setError('Failed to load data');
         }
     };
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
             setForm(emptyProductInput);
             fetchData();
             setError('');
-        } catch (err) {
+        } catch {
             setError('Failed to save product');
         }
     };
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
             });
             fetchData();
             setError('');
-        } catch (err) {
+        } catch {
             setError('Failed to delete product');
         }
     };
