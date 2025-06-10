@@ -56,7 +56,7 @@ const TopCollection = () => {
             />
 
             {/* Text content */}
-            <div className='absolute inset-0 flex flex-col gap-6 items-center justify-center text-white text-2xl'>
+            <div className='absolute inset-0 flex flex-col gap-6 items-center justify-center text-white text-2xl text-center'>
               <p>Female categories</p>
               <div className='text-white flex items-center gap-2'>
                 <p className='text-sm'>Shop categories</p>
@@ -92,7 +92,7 @@ const TopCollection = () => {
             />
 
             {/* Text content */}
-            <div className='absolute inset-0 flex flex-col gap-6 items-center justify-center text-white text-2xl'>
+            <div className='absolute inset-0 flex flex-col gap-6 items-center justify-center text-white text-2xl text-center'>
               <p>Male categories</p>
               <div className='text-white flex items-center gap-2'>
                 <p className='text-sm'>Shop categories</p>
