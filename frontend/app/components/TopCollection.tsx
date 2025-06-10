@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 const TopCollection = () => {
   const router = useRouter()
 
-  // Refs for overlays and images
   const pulseRefs = useRef<(HTMLDivElement | null)[]>([])
   const imgRefs = useRef<(HTMLImageElement | null)[]>([])
 

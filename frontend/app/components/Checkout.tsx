@@ -29,6 +29,7 @@ type Product = {
 };
 
 const Checkout = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
   const [address, setAddress] = useState({ state: '', lga: '', street: '' });
   const [loading, setLoading] = useState(false);
@@ -46,10 +47,10 @@ const Checkout = () => {
           productId: {
             _id: item.productId,
             name: item.name,
-            description: '',         // Placeholder or get from storage if available
+            description: '',         
             price: item.price,
             imageUrl: item.imageUrl,
-            stock: 1,                // Default guest cart stock (if unknown)
+            stock: 1,                
           },
           quantity: item.quantity,
           imageUrl: item.imageUrl,
@@ -60,7 +61,7 @@ const Checkout = () => {
       }
 
       try {
-        const res = await axios.get('http://localhost:3000/api/cart', {
+        const res = await axios.get(`${apiUrl}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCartItems(res.data.cart);
@@ -76,19 +77,19 @@ const Checkout = () => {
 
 
 
-  // Calculate total price based on cart items
+
   const totalPrice = cartItems.reduce(
     (acc, item) => acc + item.productId.price * item.quantity,
     0
   );
 
-  // Calculate final total including shipping
+
   const finalTotal = totalPrice
 
   const handleOrderSubmit = async () => {
     if (!isLoggedIn) {
       setShowLogin(true);
-      return; // ✅ Prevent further execution
+      return; 
     }
 
     const { state, lga, street } = address;
@@ -120,7 +121,7 @@ const Checkout = () => {
         }));
 
       await axios.post(
-        'http://localhost:3000/api/orders',
+        `${apiUrl}/api/orders`,
         {
           items,
           address: `${street}, ${lga}, ${state}`,

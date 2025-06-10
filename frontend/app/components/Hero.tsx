@@ -9,7 +9,7 @@ const Hero = () => {
         <div className='flex w-full items-center justify-center [@media(min-width:1100px)]:justify-between '>
             <div className=' w-fit'>
                 <div className='relative font-semibold font-serif [@media(max-width:500px)]:text-3xl [@media(min-width:501px)]:text-5xl md:text-7xl'>
-                    <p>Discover Timelex</p>
+                    <p>Discover Timeless</p>
                     <p className="whitespace-nowrap w-full">
                         Elegance 
                         <span className="relative inline-block align-middle">

@@ -28,12 +28,13 @@ type Order = {
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<string>('');
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     async function fetchOrders() {
       try {
         const token = localStorage.getItem('authToken');
-        const res = await axios.get('http://localhost:3000/api/order/admin', {
+        const res = await axios.get(`${apiUrl}/api/order/admin`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setOrders(res.data);

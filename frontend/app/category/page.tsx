@@ -26,6 +26,7 @@ type Product = {
 };
 
 const Categories = () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter()
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ const Categories = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await axios.get('http://localhost:3000/api/product');
+                const res = await axios.get(`${apiUrl}/api/product`);
                 console.log('API response:', res.data);
                 setProducts(res.data.products);
             } catch {

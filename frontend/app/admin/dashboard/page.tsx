@@ -44,6 +44,7 @@ const emptyProductInput: ProductInput = {
 };
 
 export default function AdminDashboard() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -60,9 +61,9 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [prodRes, catRes, colRes] = await Promise.all([
-        axios.get('http://localhost:3000/api/product'),
-        axios.get('http://localhost:3000/api/category'),
-        axios.get('http://localhost:3000/api/collections'),
+        axios.get(`${apiUrl}/api/product`),
+        axios.get(`${apiUrl}/api/category`),
+        axios.get(`${apiUrl}/api/collections`),
       ]);
       setProducts(prodRes.data.products || prodRes.data);
       setCategories(catRes.data);
@@ -124,14 +125,14 @@ export default function AdminDashboard() {
       if (editingProduct) {
         // Update existing product
         await axios.put(
-          `http://localhost:3000/api/product/${editingProduct._id}`,
+          `${apiUrl}/api/product/${editingProduct._id}`,
           form,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         // Create new product
         await axios.post(
-          `http://localhost:3000/api/product`,
+          `${apiUrl}/api/product`,
           form,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -151,7 +152,7 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      await axios.delete(`http://localhost:3000/api/product/${id}`, {
+      await axios.delete(`${apiUrl}/api/product/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchData();

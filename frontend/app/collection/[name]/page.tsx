@@ -15,6 +15,7 @@ type Product = {
 };
 
 const CollectionName = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter()
   const { name } = useParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,7 +28,7 @@ const CollectionName = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3000/api/collections/${name}/products`);
+        const response = await fetch(`${apiUrl}/api/collections/${name}/products`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to fetch products');

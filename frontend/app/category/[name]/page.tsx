@@ -15,6 +15,7 @@ type Product = {
 };
 
 const CategoryName = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter()
   const { name } = useParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,7 +28,7 @@ const CategoryName = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3000/api/category/${name}/products`);
+        const response = await fetch(`${apiUrl}/api/category/${name}/products`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to fetch products');

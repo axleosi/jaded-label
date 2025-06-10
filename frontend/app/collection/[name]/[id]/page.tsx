@@ -26,6 +26,7 @@ type Product = {
 };
 
 const ProductPage = () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const params = useParams()
     const router = useRouter()
     const productId = params?.id as string
@@ -52,7 +53,7 @@ const ProductPage = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await axios.get('http://localhost:3000/api/product');
+                const res = await axios.get(`${apiUrl}/api/product`);
                 console.log('API response:', res.data);
                 setProducts(res.data.products);
             } catch {
@@ -132,7 +133,7 @@ const ProductPage = () => {
         if (product) {
             try {
                 await axios.post(
-                    'http://localhost:3000/api/cart',
+                    `${apiUrl}/api/cart`,
                     {
                         productId: product._id,
                         quantity,

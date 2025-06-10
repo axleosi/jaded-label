@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const AdminLogin = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -10,7 +11,7 @@ const AdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/api/admin/login", {
+      const response = await axios.post(`${apiUrl}/api/admin/login`, {
         email,
         password,
       });
