@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from "react";
-import axios from "axios"; // Import AxiosError type
+import axios from "axios";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");

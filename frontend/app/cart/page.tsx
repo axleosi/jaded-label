@@ -24,17 +24,22 @@ type GuestCartItem = {
   quantity: number;
   imageUrl: string;
 };
+
 const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { fetchCartCount, isLoggedIn, cartItems, setCartItems } = useAppContext();
 
-  const token = localStorage.getItem('authToken');
+  const [token, setToken] = useState<string | null>(null);
+
+  // Read token from localStorage only on client side
+  useEffect(() => {
+    setToken(localStorage.getItem('authToken'));
+  }, []);
 
   const fetchCart = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
-
     if (!token) {
+      // Guest cart from localStorage
       const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]') as GuestCartItem[];
 
       const cartItems: CartItem[] = localCart.map((item, index) => ({
@@ -72,15 +77,9 @@ const Cart = () => {
     } finally {
       setLoading(false);
     }
-  }, [setCartItems, setError, setLoading]);
-
-
-
-
+  }, [token, setCartItems]);
 
   const updateCartItemQuantity = async (itemId: string, newQuantity: number) => {
-    const token = localStorage.getItem('authToken');
-
     if (!token) {
       const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]') as GuestCartItem[];
       const updatedCart = guestCart.map((item, index) => {
@@ -129,11 +128,7 @@ const Cart = () => {
     }
   };
 
-
-
   const deleteCartItem = async (itemId: string) => {
-    const token = localStorage.getItem('authToken');
-
     if (!token) {
       const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]') as GuestCartItem[];
       const updatedCart = guestCart.filter((_, index) => String(index) !== itemId);
@@ -172,22 +167,22 @@ const Cart = () => {
     }
   };
 
-
-
   useEffect(() => {
     const loadCart = async () => {
       setLoading(true);
-      await fetchCart(); // fetchCart uses the token internally
+      await fetchCart();
     };
 
-    loadCart();
-  }, [isLoggedIn]);
+    if (token !== null) {
+      loadCart();
+    }
+  }, [fetchCart, isLoggedIn, token]);
 
   if (loading) return <p>Loading cart...</p>;
   if (error && token) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
-    <div className=' mx-2 md:mx-[10rem]'>
+    <div className="mx-2 md:mx-[10rem]">
       <div className="flex justify-center">
         <div className="w-full py-10">
           <h2 className="text-xl font-semibold text-center pb-6">Your Cart</h2>
@@ -207,8 +202,6 @@ const Cart = () => {
               <hr className="hidden md:block border-t border-gray-300 mx-4 mb-2" />
 
               {cartItems.map((item, index) => {
-                console.log("Cart Item Image URL:", item.imageUrl, "Full Item:", item);
-
                 return (
                   <React.Fragment key={item._id}>
                     <div className="flex flex-col [@media(min-width:850px)]:grid [grid-template-columns:2fr_1fr_1fr_auto] gap-4 px-4 py-4">
@@ -216,7 +209,7 @@ const Cart = () => {
                       <div className="flex gap-3">
                         <div className="w-16 h-16 border rounded flex items-center justify-center shrink-0">
                           <img
-                            src='/hero1.jpg'
+                            src={item.imageUrl || '/hero1.jpg'}
                             alt={item.productId ? item.productId.name : 'Product image'}
                             className="w-full h-full object-cover"
                           />
@@ -279,7 +272,6 @@ const Cart = () => {
                 );
               })}
             </div>
-
           )}
         </div>
       </div>
