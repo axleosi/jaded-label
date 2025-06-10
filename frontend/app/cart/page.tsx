@@ -169,15 +169,16 @@ const Cart = () => {
   };
 
   useEffect(() => {
+    const tokenFromStorage = localStorage.getItem('authToken');
+    setToken(tokenFromStorage);
+
     const loadCart = async () => {
       setLoading(true);
       await fetchCart();
     };
 
-    if (token !== null) {
-      loadCart();
-    }
-  }, [fetchCart, isLoggedIn, token]);
+    loadCart();
+  }, [fetchCart, isLoggedIn]);
 
   if (loading) return <p>Loading cart...</p>;
   if (error && token) return <p style={{ color: 'red' }}>{error}</p>;
