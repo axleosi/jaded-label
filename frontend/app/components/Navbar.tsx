@@ -153,6 +153,13 @@ const Navbar = () => {
           >
             About us
           </Link>
+          <Link
+            href="/cart"
+            className={`block text-white ${isActive('/cart') ? 'underline font-semibold' : ''}`}
+            onClick={() => setIsOpen(false)}
+          >
+            Cart
+          </Link>
           {isLoggedIn ? (
             <button
               className="cursor-pointer px-6 py-2 mt-2 bg-white transition text-pink-300 rounded-full text-sm"
