@@ -18,7 +18,11 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'https://jaded-label-i0ui1lyx0-axleosis-projects.vercel.app',
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+  credentials: true,
+}));
 
 // Connect to MongoDB
 const connectDB = async () => {

@@ -211,7 +211,7 @@ const Cart = () => {
                       <div className="flex gap-3">
                         <div className="w-16 h-16 border rounded flex items-center justify-center shrink-0">
                           <img
-                            src={item.imageUrl || '/hero1.jpg'}
+                            src={'/hero1.jpg'}
                             alt={item.productId ? item.productId.name : 'Product image'}
                             className="w-full h-full object-cover"
                           />
