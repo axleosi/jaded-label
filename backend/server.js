@@ -19,7 +19,7 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
 app.use(cors({
-  origin: 'https://jaded-label-i0ui1lyx0-axleosis-projects.vercel.app',
+  origin: 'https://jaded-label.vercel.app',
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   credentials: true,
 }));
